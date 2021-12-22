@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,status,HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,List
+from database import SessionLocal
+import models
 
 app = FastAPI()
 
@@ -10,12 +12,62 @@ class Cat(BaseModel):
     cat_breed:str
     adopted:bool
 
-@app.get("/")
-async def root():
-    return {"key": "Value"}
+    class Config:
+        orm_mode=True
 
-@app.put('/cats/{cat_id}')
-def update_cat(*,cat_id:int,cat_name:Optional[str]="unnamed",cat_breed:Optional[str]="unknown",adopted:Optional[bool]=False,cat:Cat):
-    return {'cat_name':cat.cat_name,
-    'cat_breed':cat.cat_breed,
-    'adopted':cat.adopted}
+db=SessionLocal()
+
+@app.get('/cats',response_model=List[Cat],status_code=200)
+def get_all_cats():
+    cats=db.query(models.Cat).all()
+    return cats
+
+@app.get('/cat/{cat_id}',response_model=Cat,status_code=status.HTTP_200_OK)
+def get_cat_by_id(cat_id:int):
+    cat=db.query(models.Cat).filter(models.Cat.cat_id==cat_id).first()
+    return cat
+
+@app.post('/cats',response_model=Cat,status_code=status.HTTP_201_CREATED)
+def create_cat(cat:Cat):
+    db_cat=db.query(models.Cat).filter(models.Cat.cat_id==cat.cat_id).first()
+    if db_cat is not None:
+        raise HTTPexception(status_code=400,detail="Cat already exists")
+    else:
+        new_cat=models.Cat(
+            cat_id=cat.cat_id,
+            cat_name=cat.cat_name,
+            cat_breed=cat.cat_breed,
+            adopted=cat.adopted
+        )
+        db.add(new_cat)
+        db.commit()
+        return new_cat
+
+@app.put('/cat/{cat_id}',response_model=Cat,status_code=status.HTTP_200_OK)
+def update_cat_by_id(cat_id:int,cat:Cat):
+    cat_to_update=db.query(models.Cat).filter(models.Cat.cat_id==cat_id).first()
+    cat_to_update.cat_name=cat.cat_name
+    cat_to_update.cat_breed=cat.cat_breed
+    cat_to_update.adopted=cat.adopted
+    db.commit()
+    return cat_to_update
+
+@app.delete('/cat/{cat_id}')
+def delete_cat_by_id(cat_id:int):
+    cat_to_delete=db.query(models.Cat).filter(models.Cat.cat_id==cat_id).first()
+    if cat_to_delete is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Cat not found")
+    else:
+        db.delete(cat_to_delete)
+        db.commit()
+        return cat_to_delete
+
+#@app.get("/")
+#async def root():
+#    return {"key": "Value"}
+#
+#@app.put('/cats/{cat_id}')
+#def update_cat(*,cat_id:int,cat_name:Optional[str]="unnamed",cat_breed:Optional[str]="unknown",adopted:Optional[bool]=False,cat:Cat):
+#    return {'cat_name':cat.cat_name,
+#    'cat_breed':cat.cat_breed,
+#    'adopted':cat.adopted}
