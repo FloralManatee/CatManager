@@ -15,6 +15,12 @@ class Cat(BaseModel):
     class Config:
         orm_mode=True
 
+class CatUpdateRequest(BaseModel):
+    cat_id:Optional[int]
+    cat_name:Optional[str]
+    cat_breed:Optional[str]
+    adopted:Optional[bool]
+
 db=SessionLocal()
 
 @app.get("/")
@@ -48,13 +54,19 @@ async def create_cat(cat:Cat):
         return new_cat
 
 @app.put('/cats/{cat_id}',response_model=Cat,status_code=status.HTTP_200_OK, tags=["Update"])
-async def update_cat_by_id(cat_id:int,cat:Cat):
+async def update_cat_by_id(cat_id:int,cat_update:CatUpdateRequest):
     cat_to_update=db.query(models.Cat).filter(models.Cat.cat_id==cat_id).first()
-    cat_to_update.cat_name=cat.cat_name
-    cat_to_update.cat_breed=cat.cat_breed
-    cat_to_update.adopted=cat.adopted
-    db.commit()
-    return cat_to_update
+    if cat_to_update is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Cat not found")
+    else:
+        if cat_update.cat_name is not None:
+            cat_to_update.cat_name=cat_update.cat_name
+        if cat_update.cat_breed is not None:
+            cat_to_update.cat_breed=cat_update.cat_breed
+        if cat_update.adopted is not None:
+            cat_to_update.adopted=cat_update.adopted
+        db.commit()
+        return cat_to_update
 
 @app.delete('/cats/{cat_id}',tags=["Delete"])
 async def delete_cat_by_id(cat_id:int):
