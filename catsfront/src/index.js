@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import CatDisplay from './components/cats';
+import Cats from './components/cats';
 
 function App() {
   return(
     <div>
-      <CatDisplay />
+      <Cats />
     </div>
   )
 }
