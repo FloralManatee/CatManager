@@ -1,27 +1,60 @@
-import React, {useState,useEffect} from 'react';
+import React from 'react';
 
-function CatDisplay(props) {
-    const initialData = {cats: []};
-    const [state, setState] = useState(initialData);
+class cats extends React.Component {
+   
+    constructor(props) {
+        super(props);
+   
+        this.state = {
+            cats: [],
+            DataisLoaded: false
+        };
+    }
+   
 
-    useEffect(() => {
-        fetchCats().then(data => setState(data));
-    }, []);
-
-    async function fetchCats() {
-        const response = await fetch('http://127.0.0.1:8000/cats');
-        const data = await response.json();
-        return data;
+    componentDidMount() {
+        fetch('http://127.0.0.1:8000/cats')
+            .then((res) => res.json())
+            .then((json) => {
+                this.setState({
+                    cats: json,
+                    DataisLoaded: true
+                });
+            })
     }
 
-    // https://www.youtube.com/watch?v=tX0h1PQgWPw @ 21 minutes
-
-    return (
+    render() {
+        const { DataisLoaded, cats } = this.state;
+        if (!DataisLoaded) return <div>
+            <h1> Getting cats... </h1> </div> ;
+   
+        return (
         <div>
-            Cats
+            <h1> Registered cats: </h1>  {
+                cats.map((cat) => {
+                    if (cat.adopted) {
+                        return <ol key = { cat.cat_id } style = {{display: "flex"}}>
+                            <div style = {{textDecoration: "line-through"}}>
+                                id: { cat.cat_id },
+                                name: { cat.cat_name }, 
+                                breed: { cat.cat_breed }    
+                            </div>
+                            <div>
+                                &emsp;ADOPTED
+                            </div>
+                        </ol>
+                    } else {
+                        return <ol key = { cat.cat_id }>
+                        id: { cat.cat_id },
+                        name: { cat.cat_name }, 
+                        breed: { cat.cat_breed }
+                        </ol>
+                    }
+                    
+                })
+            }
         </div>
-    )
-    
+    );}
 }
 
-export default CatDisplay;
+export default cats;
