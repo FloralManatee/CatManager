@@ -1,5 +1,6 @@
 from fastapi import FastAPI,status,HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional,List
 from database import SessionLocal
@@ -35,6 +36,11 @@ db=SessionLocal()
 @app.get("/")
 async def root():
     return {"key": "Value"}
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    favicon_path = './favicon.ico'
+    return FileResponse(favicon_path)
 
 @app.get('/cats',response_model=List[Cat],status_code=200,tags=["Read"])
 async def Read_all_cats():
