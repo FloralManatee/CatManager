@@ -84,4 +84,4 @@ class test extends React.Component {
     }
 }
 
-export default cat;
+export default test;
