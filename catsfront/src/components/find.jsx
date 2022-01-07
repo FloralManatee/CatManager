@@ -1,6 +1,6 @@
 import React from 'react';
 
-class test extends React.Component {
+class find extends React.Component {
    
     constructor(props) {
         super(props);
@@ -84,4 +84,4 @@ class test extends React.Component {
     }
 }
 
-export default test;
+export default find;
