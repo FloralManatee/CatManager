@@ -40,7 +40,7 @@ class cats extends React.Component {
                                 breed: { cat.cat_breed }    
                             </div>
                             <div>
-                                &emsp;ADOPTED
+                                &nbsp;&nbsp;--ADOPTED
                             </div>
                         </ol>
                     } else {

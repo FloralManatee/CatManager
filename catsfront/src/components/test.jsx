@@ -9,5 +9,4 @@ class test extends React.Component {
         </div>
     );}
 }
-
 export default test;
